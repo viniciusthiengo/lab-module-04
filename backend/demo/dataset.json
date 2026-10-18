@@ -1,0 +1,115 @@
+{
+  "name": "bookshop",
+  "description": "Questions about the two demo codebases, each with a reference answer and the code that answers it.",
+  "codebases": ["bookshop-api", "bookshop-web"],
+  "examples": [
+    {
+      "id": "q01",
+      "question": "How are user passwords hashed and verified?",
+      "expected_answer": "hash_password uses PBKDF2-HMAC-SHA256 with a random 16-byte salt and 210,000 iterations and stores `salt$hash` in hex. verify_password recomputes the hash with the stored salt and compares it with hmac.compare_digest, in constant time.",
+      "relevant": ["bookshop-api:bookshop/auth.py::hash_password", "bookshop-api:bookshop/auth.py::verify_password"]
+    },
+    {
+      "id": "q02",
+      "question": "How long is an access token valid, and what happens when it expires?",
+      "expected_answer": "Tokens are valid for TOKEN_TTL_MINUTES, 30 minutes by default: create_token stores an `exp` timestamp in the signed payload. decode_token raises InvalidToken(\"token expired\") once `exp` has passed, and the current_user dependency turns it into a 401.",
+      "relevant": ["bookshop-api:bookshop/auth.py::create_token", "bookshop-api:bookshop/auth.py::decode_token", "bookshop-api:bookshop/config.py::Settings"]
+    },
+    {
+      "id": "q03",
+      "question": "What happens when the payment gateway times out?",
+      "expected_answer": "charge_order retries a GatewayTimeout up to MAX_ATTEMPTS = 3 times with exponential backoff (0.5 s, then 1 s), and re-raises it after the last attempt. The order id is sent as the idempotency key, so a retried charge is never billed twice.",
+      "relevant": ["bookshop-api:bookshop/payments.py::charge_order"]
+    },
+    {
+      "id": "q04",
+      "question": "Are declined cards retried?",
+      "expected_answer": "No. Only GatewayTimeout is retried; a PaymentDeclined error propagates at once. place_order then releases the stock reservation and re-raises the error.",
+      "relevant": ["bookshop-api:bookshop/payments.py::charge_order", "bookshop-api:bookshop/payments.py::PaymentDeclined", "bookshop-api:bookshop/orders.py::place_order"]
+    },
+    {
+      "id": "q05",
+      "question": "How is the shipping cost of a cart computed?",
+      "expected_answer": "Cart.shipping returns 0 for an empty cart or when the subtotal minus the discount reaches free_shipping_threshold (50.00 by default); otherwise it is the flat shipping_fee of 4.99.",
+      "relevant": ["bookshop-api:bookshop/cart.py::Cart.shipping", "bookshop-api:bookshop/config.py::Settings"]
+    },
+    {
+      "id": "q06",
+      "question": "What are the rules for applying a coupon to a cart?",
+      "expected_answer": "Cart.apply_coupon refuses an expired coupon and one whose min_subtotal the cart does not reach; a cart holds one coupon, so a new one replaces the previous. The discount is percent_off of the subtotal plus amount_off, never more than the subtotal.",
+      "relevant": ["bookshop-api:bookshop/cart.py::Cart.apply_coupon", "bookshop-api:bookshop/cart.py::Cart.discount"]
+    },
+    {
+      "id": "q07",
+      "question": "How many copies of the same book can a cart hold?",
+      "expected_answer": "At most 10 (MAX_QUANTITY_PER_BOOK), and never more than the copies in stock: Cart.add_item raises CartError otherwise, and also refuses quantities below 1.",
+      "relevant": ["bookshop-api:bookshop/cart.py::Cart.add_item"]
+    },
+    {
+      "id": "q08",
+      "question": "Which rate limiting algorithm does the API use, and what does a client over the limit get?",
+      "expected_answer": "A token bucket per client IP address: 20 tokens of capacity, refilled at 5 tokens per second. When the bucket is empty, the rate_limit middleware answers 429 with {\"error\": \"Too many requests\"} and a Retry-After header.",
+      "relevant": ["bookshop-api:bookshop/rate_limit.py::TokenBucket", "bookshop-api:bookshop/rate_limit.py::RateLimiter", "bookshop-api:bookshop/api.py::rate_limit"]
+    },
+    {
+      "id": "q09",
+      "question": "When can an order be cancelled, and what does cancelling do?",
+      "expected_answer": "Any order that has not shipped: cancel_order raises OrderError for shipped orders and does nothing for cancelled ones. Otherwise it refunds the charge, if there is one, releases the reserved stock and marks the order cancelled.",
+      "relevant": ["bookshop-api:bookshop/orders.py::cancel_order"]
+    },
+    {
+      "id": "q10",
+      "question": "What happens to the reserved stock when the payment fails?",
+      "expected_answer": "place_order catches the error, calls inventory.release(order.id), which gives the reserved copies back to the stock, and re-raises the error, so the copies can be sold again.",
+      "relevant": ["bookshop-api:bookshop/orders.py::place_order", "bookshop-api:bookshop/inventory.py::Inventory.release"]
+    },
+    {
+      "id": "q11",
+      "question": "How does the inventory keep two orders from selling the same copy?",
+      "expected_answer": "Inventory.reserve runs under a lock, checks every item before changing anything and reserves all items or none, raising OutOfStock when a book lacks copies; reserved copies leave the available stock.",
+      "relevant": ["bookshop-api:bookshop/inventory.py::Inventory.reserve"]
+    },
+    {
+      "id": "q12",
+      "question": "How many e-mails can a customer receive per hour?",
+      "expected_answer": "At most 5 (MAX_EMAILS_PER_HOUR). Notifier.send forgets sends older than an hour and returns False, without sending, once the recipient reached the limit.",
+      "relevant": ["bookshop-api:bookshop/notifications.py::Notifier.send"]
+    },
+    {
+      "id": "q13",
+      "question": "How does the web app handle an expired access token?",
+      "expected_answer": "request() in src/api/client.ts calls refreshAccessToken (POST /auth/refresh) once when the API answers 401, stores the new token and retries the request; if the refresh fails, the error is thrown as an ApiError.",
+      "relevant": ["bookshop-web:src/api/client.ts::request", "bookshop-web:src/api/client.ts::refreshAccessToken"]
+    },
+    {
+      "id": "q14",
+      "question": "What does the cart UI do when adding a book fails?",
+      "expected_answer": "useCart adds the book optimistically, before the API answers; if the POST /cart/items request fails, it restores the previous lines and sets an error message.",
+      "relevant": ["bookshop-web:src/cart/useCart.ts::useCart"]
+    },
+    {
+      "id": "q15",
+      "question": "How is the book search input debounced?",
+      "expected_answer": "BookList passes the query through useDebounce(query, 300), so the API is called 300 ms after the user stops typing; the effect ignores responses that arrive after a newer query.",
+      "relevant": ["bookshop-web:src/components/BookList.tsx::BookList", "bookshop-web:src/hooks/useDebounce.ts::useDebounce"]
+    },
+    {
+      "id": "q16",
+      "question": "How are prices displayed in the web app?",
+      "expected_answer": "formatPrice uses Intl.NumberFormat with the en-US locale and USD currency (for example $1,234.50), parsing the string prices that the API sends.",
+      "relevant": ["bookshop-web:src/utils/format.ts::formatPrice"]
+    },
+    {
+      "id": "q17",
+      "question": "How many books can a page of search results show?",
+      "expected_answer": "20 by default (per_page), and at most 50: paginate caps per_page at MAX_PAGE_SIZE = 50 and at least 1.",
+      "relevant": ["bookshop-api:bookshop/catalog.py::paginate", "bookshop-api:bookshop/api.py::list_books"]
+    },
+    {
+      "id": "q18",
+      "question": "Which environment variables configure the API?",
+      "expected_answer": "DATABASE_URL (default sqlite:///bookshop.db), JWT_SECRET (required), TOKEN_TTL_MINUTES (30), FREE_SHIPPING_THRESHOLD (50.00) and SMTP_HOST (localhost), read by Settings.from_env.",
+      "relevant": ["bookshop-api:bookshop/config.py::Settings", "bookshop-api:README.md::Configuration"]
+    }
+  ]
+}

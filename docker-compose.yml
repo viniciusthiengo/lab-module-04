@@ -1,0 +1,18 @@
+# Runs the backend locally on http://localhost:8000 (the frontend runs with `npm run dev`).
+# Put ANTHROPIC_API_KEY in backend/.env; without it, indexing and search work, and answers,
+# reranking and judging answer 503. The index is kept in the `index` volume.
+services:
+  backend:
+    build:
+      context: ./backend
+      target: runtime
+    ports:
+      - "8000:8000"
+    env_file:
+      - path: ./backend/.env
+        required: false
+    volumes:
+      - index:/data
+
+volumes:
+  index:

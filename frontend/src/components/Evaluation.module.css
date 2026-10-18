@@ -1,0 +1,365 @@
+.dataset {
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+.dataset summary {
+  width: fit-content;
+  cursor: pointer;
+}
+
+.dataset ol {
+  display: grid;
+  gap: 0.6rem;
+  max-height: 24rem;
+  overflow: auto;
+  margin: 0.6rem 0 0;
+  padding: 0.6rem 0.75rem 0.6rem 2rem;
+  border: 1px solid var(--border);
+  border-radius: 0.6rem;
+}
+
+.dataset li p {
+  margin: 0.15rem 0 0;
+  color: var(--muted);
+}
+
+.targets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+.targets code,
+.keys code {
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  overflow-wrap: anywhere;
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem 1rem;
+  margin-bottom: 1rem;
+}
+
+.control {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.control select {
+  font: inherit;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: 0.45rem;
+  padding: 0.25rem 0.4rem;
+}
+
+.progress {
+  position: relative;
+  height: 2rem;
+  margin-bottom: 1rem;
+  overflow: hidden;
+  background: var(--surface-2);
+  border-radius: 0.6rem;
+}
+
+.progress span {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: var(--bar);
+  transition: width 0.4s;
+}
+
+.progress p {
+  position: relative;
+  margin: 0;
+  line-height: 2rem;
+  text-align: center;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.report {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.runMeta {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.subtitle {
+  margin: 1rem 0 0.25rem;
+  font-size: 1rem;
+}
+
+.tableWrap {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: 0.7rem;
+}
+
+.metrics {
+  width: 100%;
+  min-width: 40rem;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.metrics th,
+.metrics td {
+  padding: 0.55rem 0.75rem;
+  border-bottom: 1px solid var(--border);
+  text-align: right;
+}
+
+.metrics tr:last-child th,
+.metrics tr:last-child td {
+  border-bottom: 0;
+}
+
+.metrics thead th {
+  font-size: 0.78rem;
+  color: var(--muted);
+  background: var(--surface-2);
+  white-space: nowrap;
+  cursor: help;
+}
+
+.metrics th:first-child {
+  text-align: left;
+}
+
+.metrics tbody th {
+  font-weight: 700;
+}
+
+/* The setting stays visible while the table scrolls sideways on small screens. */
+.metrics th:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  min-width: 11rem;
+  background: var(--surface);
+}
+
+.metrics thead th:first-child {
+  background: var(--surface-2);
+}
+
+.settingNote {
+  display: block;
+  font-size: 0.74rem;
+  font-weight: 400;
+  color: var(--muted);
+}
+
+.value {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.cellMeter {
+  width: 3rem;
+  height: 0.35rem;
+  border-radius: 999px;
+  background: linear-gradient(
+    to right,
+    var(--bar) calc(var(--value) * 100%),
+    var(--surface-2) calc(var(--value) * 100%)
+  );
+}
+
+.best .cellMeter {
+  background: linear-gradient(
+    to right,
+    var(--accent) calc(var(--value) * 100%),
+    var(--surface-2) calc(var(--value) * 100%)
+  );
+}
+
+.number {
+  min-width: 3rem;
+  text-align: right;
+}
+
+.best {
+  font-weight: 800;
+  color: var(--accent-strong);
+}
+
+.scores {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  gap: 0.6rem;
+}
+
+.score {
+  display: grid;
+  gap: 0.25rem;
+  align-content: start;
+  border: 1px solid var(--border);
+  border-radius: 0.7rem;
+  padding: 0.7rem 0.8rem;
+}
+
+.scoreName {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.scoreValue {
+  font-size: 1.5rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.scoreValue small {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.meter {
+  height: 0.35rem;
+  border-radius: 999px;
+  background: linear-gradient(
+    to right,
+    var(--accent) calc(var(--value) * 100%),
+    var(--surface-2) calc(var(--value) * 100%)
+  );
+}
+
+.examples {
+  display: grid;
+  gap: 0.4rem;
+  margin: 0.3rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.example {
+  border: 1px solid var(--border);
+  border-radius: 0.6rem;
+}
+
+.example[open] {
+  border-color: var(--border-strong);
+}
+
+.example summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem 0.7rem;
+  padding: 0.5rem 0.75rem;
+  cursor: pointer;
+}
+
+.exampleId {
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.exampleQuestion {
+  flex: 1 1 16rem;
+  min-width: 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.ranksRow {
+  display: inline-flex;
+  gap: 0.25rem;
+}
+
+.rank {
+  display: inline-grid;
+  place-items: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  border-radius: 0.4rem;
+}
+
+.rankTop {
+  color: var(--success);
+  background: var(--success-soft);
+}
+
+.rankLow {
+  color: var(--warning);
+  background: var(--warning-soft);
+}
+
+.rankMiss {
+  color: var(--danger);
+  background: var(--danger-soft);
+}
+
+.exampleBody {
+  display: grid;
+  gap: 0.85rem;
+  border-top: 1px solid var(--border);
+  padding: 0.75rem;
+  font-size: 0.9rem;
+}
+
+.exampleBody h4 {
+  margin: 0 0 0.25rem;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.exampleBody p {
+  margin: 0;
+}
+
+.keys {
+  display: grid;
+  gap: 0.15rem;
+  margin: 0;
+  padding-left: 1.3rem;
+}
+
+.relevant {
+  font-weight: 700;
+  color: var(--success);
+}
+
+.relevant::marker {
+  content: "✓ ";
+}
+
+.retrieved {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  gap: 0.75rem;
+}
+
+.check {
+  margin: 0.25rem 0 0;
+  font-size: 0.88rem;
+  border-left: 3px solid var(--accent);
+  padding-left: 0.65rem;
+}

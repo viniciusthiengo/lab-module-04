@@ -1,0 +1,1552 @@
+{
+  "dataset": "bookshop",
+  "codebases": [
+    "bookshop-api",
+    "bookshop-web"
+  ],
+  "k": 5,
+  "settings": [
+    "vector",
+    "bm25",
+    "hybrid",
+    "hybrid+rerank"
+  ],
+  "answer_setting": "hybrid+rerank",
+  "metrics": {
+    "vector": {
+      "precision": 0.2889,
+      "recall": 0.8426,
+      "mrr": 0.7352,
+      "ndcg": 0.7194,
+      "hit_rate": 0.9444
+    },
+    "bm25": {
+      "precision": 0.3,
+      "recall": 0.8704,
+      "mrr": 0.6269,
+      "ndcg": 0.6585,
+      "hit_rate": 1.0
+    },
+    "hybrid": {
+      "precision": 0.3,
+      "recall": 0.8704,
+      "mrr": 0.7731,
+      "ndcg": 0.7524,
+      "hit_rate": 0.9444
+    },
+    "hybrid+rerank": {
+      "precision": 0.3222,
+      "recall": 0.9352,
+      "mrr": 0.8889,
+      "ndcg": 0.8806,
+      "hit_rate": 1.0
+    }
+  },
+  "generation": {
+    "faithfulness": 4.944,
+    "relevance": 5.0,
+    "correctness": 4.722,
+    "pass_rate": 1.0,
+    "grounded_rate": 1.0,
+    "judged": 18,
+    "check": {
+      "judged": 18,
+      "pass_rate": 0.0,
+      "faithfulness": 1.111,
+      "relevance": 1.0,
+      "correctness": 1.0
+    }
+  },
+  "examples": [
+    {
+      "id": "q01",
+      "question": "How are user passwords hashed and verified?",
+      "expected_answer": "hash_password uses PBKDF2-HMAC-SHA256 with a random 16-byte salt and 210,000 iterations and stores `salt$hash` in hex. verify_password recomputes the hash with the stored salt and compares it with hmac.compare_digest, in constant time.",
+      "relevant": [
+        "bookshop-api:bookshop/auth.py::hash_password",
+        "bookshop-api:bookshop/auth.py::verify_password"
+      ],
+      "retrieval": {
+        "vector": {
+          "retrieved": [
+            "bookshop-api:bookshop/auth.py::verify_password",
+            "bookshop-api:bookshop/auth.py::hash_password",
+            "bookshop-api:bookshop/auth.py::<module>",
+            "bookshop-api:bookshop/auth.py::decode_token",
+            "bookshop-api:bookshop/auth.py::create_token"
+          ],
+          "precision": 0.4,
+          "recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "ndcg": 1.0,
+          "hit": 1.0
+        },
+        "bm25": {
+          "retrieved": [
+            "bookshop-api:bookshop/auth.py::verify_password",
+            "bookshop-api:bookshop/auth.py::hash_password",
+            "bookshop-api:bookshop/auth.py::<module>",
+            "bookshop-api:bookshop/api.py::my_orders",
+            "bookshop-api:bookshop/api.py::current_user"
+          ],
+          "precision": 0.4,
+          "recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "ndcg": 1.0,
+          "hit": 1.0
+        },
+        "hybrid": {
+          "retrieved": [
+            "bookshop-api:bookshop/auth.py::verify_password",
+            "bookshop-api:bookshop/auth.py::hash_password",
+            "bookshop-api:bookshop/auth.py::<module>",
+            "bookshop-api:bookshop/auth.py::create_token",
+            "bookshop-api:bookshop/api.py::current_user"
+          ],
+          "precision": 0.4,
+          "recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "ndcg": 1.0,
+          "hit": 1.0
+        },
+        "hybrid+rerank": {
+          "retrieved": [
+            "bookshop-api:bookshop/auth.py::verify_password",
+            "bookshop-api:bookshop/auth.py::hash_password",
+            "bookshop-api:bookshop/auth.py::<module>",
+            "bookshop-api:bookshop/auth.py::create_token",
+            "bookshop-api:bookshop/api.py::current_user"
+          ],
+          "precision": 0.4,
+          "recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "ndcg": 1.0,
+          "hit": 1.0
+        }
+      },
+      "answer": {
+        "answer": "User passwords are hashed using PBKDF2-HMAC-SHA256 with a random 16-byte salt [2]. The hashing process generates a random salt via `os.urandom(SALT_BYTES)` and applies PBKDF2 with 210,000 iterations, returning the result as `salt$hash` [2].\n\nVerification recomputes the hash using the stored salt and compares it in constant time [1]. The `verify_password` function splits the stored value on `$` to extract the salt and digest, recomputes the PBKDF2-HMAC-SHA256 hash with the same parameters, and uses `hmac.compare_digest()` to safely compare the digests [1].\n\nThe constants are defined as:\n- `PBKDF2_ITERATIONS = 210_000` [3]\n- `SALT_BYTES = 16` [3]",
+        "grounded": true,
+        "sources_used": [
+          1,
+          2,
+          3
+        ],
+        "judgement": {
+          "faithfulness": 5,
+          "relevance": 5,
+          "correctness": 5,
+          "passed": true,
+          "rationale": "The answer accurately describes both hash_password and verify_password, matching the reference's details on PBKDF2-HMAC-SHA256, salt size, iterations, storage format, and constant-time comparison, all fully supported by the excerpts."
+        }
+      }
+    },
+    {
+      "id": "q02",
+      "question": "How long is an access token valid, and what happens when it expires?",
+      "expected_answer": "Tokens are valid for TOKEN_TTL_MINUTES, 30 minutes by default: create_token stores an `exp` timestamp in the signed payload. decode_token raises InvalidToken(\"token expired\") once `exp` has passed, and the current_user dependency turns it into a 401.",
+      "relevant": [
+        "bookshop-api:bookshop/auth.py::create_token",
+        "bookshop-api:bookshop/auth.py::decode_token",
+        "bookshop-api:bookshop/config.py::Settings"
+      ],
+      "retrieval": {
+        "vector": {
+          "retrieved": [
+            "bookshop-web:src/api/client.ts::request",
+            "bookshop-api:bookshop/auth.py::InvalidToken",
+            "bookshop-api:bookshop/rate_limit.py::TokenBucket",
+            "bookshop-api:bookshop/api.py::current_user",
+            "bookshop-web:src/api/client.ts::setAccessToken"
+          ],
+          "precision": 0.0,
+          "recall": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg": 0.0,
+          "hit": 0.0
+        },
+        "bm25": {
+          "retrieved": [
+            "bookshop-api:README.md::Configuration",
+            "bookshop-web:src/api/client.ts::setAccessToken",
+            "bookshop-web:src/api/client.ts::refreshAccessToken",
+            "bookshop-api:bookshop/auth.py::decode_token",
+            "bookshop-api:bookshop/auth.py::InvalidToken"
+          ],
+          "precision": 0.2,
+          "recall": 0.3333,
+          "reciprocal_rank": 0.25,
+          "ndcg": 0.2021,
+          "hit": 1.0
+        },
+        "hybrid": {
+          "retrieved": [
+            "bookshop-api:bookshop/auth.py::InvalidToken",
+            "bookshop-web:src/api/client.ts::setAccessToken",
+            "bookshop-web:src/api/client.ts::request",
+            "bookshop-api:README.md::Configuration",
+            "bookshop-web:src/api/client.ts::refreshAccessToken"
+          ],
+          "precision": 0.0,
+          "recall": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg": 0.0,
+          "hit": 0.0
+        },
+        "hybrid+rerank": {
+          "retrieved": [
+            "bookshop-api:README.md::Configuration",
+            "bookshop-api:bookshop/auth.py::decode_token",
+            "bookshop-web:src/api/client.ts::request",
+            "bookshop-web:src/api/client.ts::refreshAccessToken",
+            "bookshop-api:bookshop/auth.py::create_token"
+          ],
+          "precision": 0.4,
+          "recall": 0.6667,
+          "reciprocal_rank": 0.5,
+          "ndcg": 0.4776,
+          "hit": 1.0
+        }
+      },
+      "answer": {
+        "answer": "An access token is valid for 30 minutes by default [1]. When it expires, the token validation fails: the `decode_token` function checks if the token's expiration time (`exp`) has passed and raises an `InvalidToken` exception with the message \"token expired\" if it has [2].\n\nOn the client side, when the API returns a 401 status (which would occur due to an expired token), the application automatically attempts to refresh the token once and retry the request [3].",
+        "grounded": true,
+        "sources_used": [
+          1,
+          2,
+          3
+        ],
+        "judgement": {
+          "faithfulness": 5,
+          "relevance": 5,
+          "correctness": 5,
+          "passed": true,
+          "rationale": "The answer correctly states the 30-minute default TTL, explains decode_token's expiration check and InvalidToken error, and adds the client-side refresh behavior on 401, all supported by the excerpts and matching the reference's key points."
+        }
+      }
+    },
+    {
+      "id": "q03",
+      "question": "What happens when the payment gateway times out?",
+      "expected_answer": "charge_order retries a GatewayTimeout up to MAX_ATTEMPTS = 3 times with exponential backoff (0.5 s, then 1 s), and re-raises it after the last attempt. The order id is sent as the idempotency key, so a retried charge is never billed twice.",
+      "relevant": [
+        "bookshop-api:bookshop/payments.py::charge_order"
+      ],
+      "retrieval": {
+        "vector": {
+          "retrieved": [
+            "bookshop-api:bookshop/payments.py::GatewayTimeout",
+            "bookshop-api:README.md::Payments",
+            "bookshop-api:bookshop/payments.py::charge_order",
+            "bookshop-api:bookshop/payments.py::<module>",
+            "bookshop-api:bookshop/payments.py::PaymentDeclined"
+          ],
+          "precision": 0.2,
+          "recall": 1.0,
+          "reciprocal_rank": 0.3333,
+          "ndcg": 0.5,
+          "hit": 1.0
+        },
+        "bm25": {
+          "retrieved": [
+            "bookshop-api:bookshop/payments.py::GatewayTimeout",
+            "bookshop-api:bookshop/payments.py::<module>",
+            "bookshop-api:bookshop/payments.py::charge_order",
+            "bookshop-api:README.md::Payments",
+            "bookshop-api:bookshop/payments.py::PaymentGateway"
+          ],
+          "precision": 0.2,
+          "recall": 1.0,
+          "reciprocal_rank": 0.3333,
+          "ndcg": 0.5,
+          "hit": 1.0
+        },
+        "hybrid": {
+          "retrieved": [
+            "bookshop-api:bookshop/payments.py::GatewayTimeout",
+            "bookshop-api:README.md::Payments",
+            "bookshop-api:bookshop/payments.py::<module>",
+            "bookshop-api:bookshop/payments.py::charge_order",
+            "bookshop-api:bookshop/payments.py::PaymentGateway"
+          ],
+          "precision": 0.2,
+          "recall": 1.0,
+          "reciprocal_rank": 0.25,
+          "ndcg": 0.4307,
+          "hit": 1.0
+        },
+        "hybrid+rerank": {
+          "retrieved": [
+            "bookshop-api:README.md::Payments",
+            "bookshop-api:bookshop/payments.py::charge_order",
+            "bookshop-api:bookshop/payments.py::GatewayTimeout",
+            "bookshop-api:bookshop/payments.py::<module>",
+            "bookshop-api:bookshop/orders.py::place_order"
+          ],
+          "precision": 0.2,
+          "recall": 1.0,
+          "reciprocal_rank": 0.5,
+          "ndcg": 0.6309,
+          "hit": 1.0
+        }
+      },
+      "answer": {
+        "answer": "When the payment gateway times out, the `charge_order` function retries the charge up to `MAX_ATTEMPTS` times (3 attempts total) with exponential backoff [1][2]. The delays between retries are 0.5 seconds, then 1 second, then 2 seconds [2]. If all retries are exhausted, the timeout exception is raised [2].\n\nSpecifically, a `GatewayTimeout` exception indicates \"the charge may be retried\" [3]. The function uses the order ID as an idempotency key to ensure that retried charges are never billed twice [2].\n\nIf the payment ultimately fails after retries, the order reservation is released in `place_order`, allowing the book copies to be sold again [5].",
+        "grounded": true,
+        "sources_used": [
+          1,
+          2,
+          3,
+          5
+        ],
+        "judgement": {
+          "faithfulness": 4,
+          "relevance": 5,
+          "correctness": 4,
+          "passed": true,
+          "rationale": "The answer correctly describes retry count, idempotency key, and fallback to place_order's release logic, matching the reference closely, but it slightly misstates the backoff schedule as '0.5s, then 1s, then 2s' (the third attempt is the final try that fails, not retried with a 2s delay), introducing a minor unsupported claim.4"
+        }
+      }
+    },
+    {
+      "id": "q04",
+      "question": "Are declined cards retried?",
+      "expected_answer": "No. Only GatewayTimeout is retried; a PaymentDeclined error propagates at once. place_order then releases the stock reservation and re-raises the error.",
+      "relevant": [
+        "bookshop-api:bookshop/payments.py::charge_order",
+        "bookshop-api:bookshop/payments.py::PaymentDeclined",
+        "bookshop-api:bookshop/orders.py::place_order"
+      ],
+      "retrieval": {
+        "vector": {
+          "retrieved": [
+            "bookshop-api:bookshop/payments.py::PaymentDeclined",
+            "bookshop-api:README.md::Payments",
+            "bookshop-api:bookshop/payments.py::charge_order",
+            "bookshop-api:bookshop/orders.py::cancel_order",
+            "bookshop-api:bookshop/payments.py::PaymentGateway"
+          ],
+          "precision": 0.4,
+          "recall": 0.6667,
+          "reciprocal_rank": 1.0,
+          "ndcg": 0.7039,
+          "hit": 1.0
+        },
+        "bm25": {
+          "retrieved": [
+            "bookshop-api:bookshop/payments.py::PaymentDeclined",
+            "bookshop-api:README.md::Payments",
+            "bookshop-api:bookshop/payments.py::charge_order",
+            "bookshop-api:bookshop/payments.py::<module>",
+            "bookshop-api:bookshop/api.py::rate_limit"
+          ],
+          "precision": 0.4,
+          "recall": 0.6667,
+          "reciprocal_rank": 1.0,
+          "ndcg": 0.7039,
+          "hit": 1.0
+        },
+        "hybrid": {
+          "retrieved": [
+            "bookshop-api:bookshop/payments.py::PaymentDeclined",
+            "bookshop-api:README.md::Payments",
+            "bookshop-api:bookshop/payments.py::charge_order",
+            "bookshop-api:bookshop/payments.py::<module>",
+            "bookshop-api:bookshop/payments.py::PaymentGateway"
+          ],
+          "precision": 0.4,
+          "recall": 0.6667,
+          "reciprocal_rank": 1.0,
+          "ndcg": 0.7039,
+          "hit": 1.0
+        },
+        "hybrid+rerank": {
+          "retrieved": [
+            "bookshop-api:README.md::Payments",
+            "bookshop-api:bookshop/payments.py::charge_order",
+            "bookshop-api:bookshop/payments.py::PaymentDeclined",
+            "bookshop-api:bookshop/payments.py::GatewayTimeout",
+            "bookshop-api:bookshop/payments.py::<module>"
+          ],
+          "precision": 0.4,
+          "recall": 0.6667,
+          "reciprocal_rank": 0.5,
+          "ndcg": 0.5307,
+          "hit": 1.0
+        }
+      },
+      "answer": {
+        "answer": "No, declined cards are not retried. [1] According to the documentation, \"Declined cards are not retried.\" [2] This is also enforced in the `charge_order` function, which only catches and retries `GatewayTimeout` exceptions [2], not `PaymentDeclined` exceptions [3]. The function retries timeouts up to `MAX_ATTEMPTS` times with exponential backoff, but declined cards fail immediately without retry logic.",
+        "grounded": true,
+        "sources_used": [
+          1,
+          2,
+          3
+        ],
+        "judgement": {
+          "faithfulness": 5,
+          "relevance": 5,
+          "correctness": 4,
+          "passed": true,
+          "rationale": "The answer correctly states declined cards are not retried and accurately explains the code mechanism, but omits the reference's detail about place_order releasing stock reservation and re-raising the error, which is a minor missing point."
+        }
+      }
+    },
+    {
+      "id": "q05",
+      "question": "How is the shipping cost of a cart computed?",
+      "expected_answer": "Cart.shipping returns 0 for an empty cart or when the subtotal minus the discount reaches free_shipping_threshold (50.00 by default); otherwise it is the flat shipping_fee of 4.99.",
+      "relevant": [
+        "bookshop-api:bookshop/cart.py::Cart.shipping",
+        "bookshop-api:bookshop/config.py::Settings"
+      ],
+      "retrieval": {
+        "vector": {
+          "retrieved": [
+            "bookshop-api:bookshop/cart.py::Cart.shipping",
+            "bookshop-api:bookshop/cart.py::Cart.total",
+            "bookshop-api:tests/test_cart.py::test_free_shipping_from_the_threshold",
+            "bookshop-api:bookshop/cart.py::Cart.subtotal",
+            "bookshop-api:bookshop/cart.py::<module>"
+          ],
+          "precision": 0.2,
+          "recall": 0.5,
+          "reciprocal_rank": 1.0,
+          "ndcg": 0.6131,
+          "hit": 1.0
+        },
+        "bm25": {
+          "retrieved": [
+            "bookshop-api:tests/test_cart.py::test_free_shipping_from_the_threshold",
+            "bookshop-api:bookshop/cart.py::Cart.shipping",
+            "bookshop-api:bookshop/cart.py::Cart.total",
+            "bookshop-api:bookshop/cart.py::<module>",
+            "bookshop-api:bookshop/orders.py::OrderStatus"
+          ],
+          "precision": 0.2,
+          "recall": 0.5,
+          "reciprocal_rank": 0.5,
+          "ndcg": 0.3869,
+          "hit": 1.0
+        },
+        "hybrid": {
+          "retrieved": [
+            "bookshop-api:bookshop/cart.py::Cart.shipping",
+            "bookshop-api:tests/test_cart.py::test_free_shipping_from_the_threshold",
+            "bookshop-api:bookshop/cart.py::Cart.total",
+            "bookshop-api:bookshop/cart.py::<module>",
+            "bookshop-web:src/cart/useCart.ts::CartLine"
+          ],
+          "precision": 0.2,
+          "recall": 0.5,
+          "reciprocal_rank": 1.0,
+          "ndcg": 0.6131,
+          "hit": 1.0
+        },
+        "hybrid+rerank": {
+          "retrieved": [
+            "bookshop-api:bookshop/cart.py::Cart.shipping",
+            "bookshop-api:tests/test_cart.py::test_free_shipping_from_the_threshold",
+            "bookshop-api:bookshop/cart.py::Cart.total",
+            "bookshop-api:bookshop/cart.py::Cart.subtotal",
+            "bookshop-api:bookshop/cart.py::Cart.discount"
+          ],
+          "precision": 0.2,
+          "recall": 0.5,
+          "reciprocal_rank": 1.0,
+          "ndcg": 0.6131,
+          "hit": 1.0
+        }
+      },
+      "answer": {
+        "answer": "The shipping cost is computed based on whether the cart's subtotal minus discounts meets or exceeds a free-shipping threshold [1]:\n\n```python\ndef shipping(self) -> Decimal:\n    \"\"\"Free from the free-shipping threshold (after discounts), a flat fee below it.\"\"\"\n    if not self.items:\n        return Decimal(\"0\")\n    if self.subtotal() - self.discount() >= self.settings.free_shipping_threshold:\n        return Decimal(\"0\")\n    return self.settings.shipping_fee\n```\n\nSpecifically:\n- If the cart is empty, shipping is free (0) [1]\n- If the discounted subtotal (`subtotal() - discount()`) is greater than or equal to `free_shipping_threshold`, shipping is free (0) [1]\n- Otherwise, a flat `shipping_fee` is charged [1]",
+        "grounded": true,
+        "sources_used": [
+          1
+        ],
+        "judgement": {
+          "faithfulness": 5,
+          "relevance": 5,
+          "correctness": 5,
+          "passed": true,
+          "rationale": "The answer accurately explains the shipping logic (empty cart, threshold check, flat fee), fully supported by the retrieved code and matching the reference's description, though it omits the specific default numeric values which are not critical.<br>Overall it is faithful, relevant, and correct.</br>"
+        }
+      }
+    },
+    {
+      "id": "q06",
+      "question": "What are the rules for applying a coupon to a cart?",
+      "expected_answer": "Cart.apply_coupon refuses an expired coupon and one whose min_subtotal the cart does not reach; a cart holds one coupon, so a new one replaces the previous. The discount is percent_off of the subtotal plus amount_off, never more than the subtotal.",
+      "relevant": [
+        "bookshop-api:bookshop/cart.py::Cart.apply_coupon",
+        "bookshop-api:bookshop/cart.py::Cart.discount"
+      ],
+      "retrieval": {
+        "vector": {
+          "retrieved": [
+            "bookshop-api:bookshop/cart.py::Cart.apply_coupon",
+            "bookshop-api:bookshop/cart.py::Cart",
+            "bookshop-api:bookshop/cart.py::Coupon",
+            "bookshop-api:tests/test_cart.py::test_expired_coupons_are_refused",
+            "bookshop-api:bookshop/cart.py::Cart.discount"
+          ],
+          "precision": 0.6,
+          "recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "ndcg": 1.2372,
+          "hit": 1.0
+        },
+        "bm25": {
+          "retrieved": [
+            "bookshop-api:bookshop/cart.py::Cart.apply_coupon",
+            "bookshop-api:tests/test_cart.py::test_expired_coupons_are_refused",
+            "bookshop-api:bookshop/cart.py::Cart",
+            "bookshop-api:bookshop/cart.py::Cart.discount",
+            "bookshop-api:bookshop/cart.py::Coupon"
+          ],
+          "precision": 0.6,
+          "recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "ndcg": 1.1838,
+          "hit": 1.0
+        },
+        "hybrid": {
+          "retrieved": [
+            "bookshop-api:bookshop/cart.py::Cart.apply_coupon",
+            "bookshop-api:bookshop/cart.py::Cart",
+            "bookshop-api:tests/test_cart.py::test_expired_coupons_are_refused",
+            "bookshop-api:bookshop/cart.py::Coupon",
+            "bookshop-api:bookshop/cart.py::Cart.discount"
+          ],
+          "precision": 0.6,
+          "recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "ndcg": 1.2372,
+          "hit": 1.0
+        },
+        "hybrid+rerank": {
+          "retrieved": [
+            "bookshop-api:bookshop/cart.py::Cart.apply_coupon",
+            "bookshop-api:bookshop/cart.py::Cart",
+            "bookshop-api:tests/test_cart.py::test_expired_coupons_are_refused",
+            "bookshop-api:bookshop/cart.py::Coupon",
+            "bookshop-api:bookshop/cart.py::CartError"
+          ],
+          "precision": 0.4,
+          "recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "ndcg": 1.0,
+          "hit": 1.0
+        }
+      },
+      "answer": {
+        "answer": "There are two rules for applying a coupon to a cart [1]:\n\n1. **Expiration check**: The coupon must not have expired. If `coupon.expires_on` is not `None` and is earlier than the current date (`today`), a `CartError` with message \"coupon expired\" is raised [1].\n\n2. **Minimum subtotal check**: The cart's subtotal must be at least equal to the coupon's minimum subtotal requirement (`coupon.min_subtotal`). If the subtotal is less, a `CartError` is raised with a message indicating the required subtotal [1].\n\nOnce both conditions are met, the coupon is applied to the cart, replacing any previously applied coupon [1].\n\nFor example, as shown in the test [3], attempting to apply a coupon with `expires_on=date(2020, 1, 1)` when the current date is `date(2026, 1, 1)` will raise a `CartError` with \"expired\" in the message.",
+        "grounded": true,
+        "sources_used": [
+          1,
+          3
+        ],
+        "judgement": {
+          "faithfulness": 5,
+          "relevance": 5,
+          "correctness": 4,
+          "passed": true,
+          "rationale": "The answer correctly covers expiration and minimum subtotal rules and the single-coupon replacement rule, all fully supported by the excerpts; it omits the discount calculation details (percent_off + amount_off capped at subtotal) mentioned in the reference, but that information isn't in the retrieved excerpts anyway.'"
+        }
+      }
+    },
+    {
+      "id": "q07",
+      "question": "How many copies of the same book can a cart hold?",
+      "expected_answer": "At most 10 (MAX_QUANTITY_PER_BOOK), and never more than the copies in stock: Cart.add_item raises CartError otherwise, and also refuses quantities below 1.",
+      "relevant": [
+        "bookshop-api:bookshop/cart.py::Cart.add_item"
+      ],
+      "retrieval": {
+        "vector": {
+          "retrieved": [
+            "bookshop-api:bookshop/cart.py::Cart.add_item",
+            "bookshop-api:bookshop/cart.py::<module>",
+            "bookshop-api:bookshop/inventory.py::OutOfStock",
+            "bookshop-api:bookshop/inventory.py::Inventory",
+            "bookshop-api:bookshop/cart.py::CartError"
+          ],
+          "precision": 0.2,
+          "recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "ndcg": 1.0,
+          "hit": 1.0
+        },
+        "bm25": {
+          "retrieved": [
+            "bookshop-api:bookshop/inventory.py::<module>",
+            "bookshop-api:bookshop/cart.py::Cart.add_item",
+            "bookshop-api:bookshop/inventory.py::OutOfStock",
+            "bookshop-api:bookshop/inventory.py::Inventory",
+            "bookshop-api:bookshop/orders.py::place_order"
+          ],
+          "precision": 0.2,
+          "recall": 1.0,
+          "reciprocal_rank": 0.5,
+          "ndcg": 0.6309,
+          "hit": 1.0
+        },
+        "hybrid": {
+          "retrieved": [
+            "bookshop-api:bookshop/cart.py::Cart.add_item",
+            "bookshop-api:bookshop/inventory.py::OutOfStock",
+            "bookshop-api:bookshop/inventory.py::<module>",
+            "bookshop-api:bookshop/inventory.py::Inventory",
+            "bookshop-api:bookshop/orders.py::place_order"
+          ],
+          "precision": 0.2,
+          "recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "ndcg": 1.0,
+          "hit": 1.0
+        },
+        "hybrid+rerank": {
+          "retrieved": [
+            "bookshop-api:bookshop/cart.py::Cart.add_item",
+            "bookshop-api:bookshop/cart.py::<module>",
+            "bookshop-api:tests/test_cart.py::test_quantity_is_limited_by_stock",
+            "bookshop-api:bookshop/orders.py::place_order",
+            "bookshop-api:bookshop/cart.py::Cart.remove_item"
+          ],
+          "precision": 0.2,
+          "recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "ndcg": 1.0,
+          "hit": 1.0
+        }
+      },
+      "answer": {
+        "answer": "A cart can hold at most 10 copies of the same book [1]. This limit is enforced by the `MAX_QUANTITY_PER_BOOK` constant [2], which is checked in the `add_item` method to ensure that `new_quantity > MAX_QUANTITY_PER_BOOK` raises a `CartError` [1].",
+        "grounded": true,
+        "sources_used": [
+          1,
+          2
+        ],
+        "judgement": {
+          "faithfulness": 5,
+          "relevance": 5,
+          "correctness": 4,
+          "passed": true,
+          "rationale": "The answer correctly identifies the 10-copy limit and cites the enforcing code, matching the reference, but omits the stock cap and minimum quantity constraints mentioned in the reference.ăn"
+        }
+      }
+    },
+    {
+      "id": "q08",
+      "question": "Which rate limiting algorithm does the API use, and what does a client over the limit get?",
+      "expected_answer": "A token bucket per client IP address: 20 tokens of capacity, refilled at 5 tokens per second. When the bucket is empty, the rate_limit middleware answers 429 with {\"error\": \"Too many requests\"} and a Retry-After header.",
+      "relevant": [
+        "bookshop-api:bookshop/rate_limit.py::TokenBucket",
+        "bookshop-api:bookshop/rate_limit.py::RateLimiter",
+        "bookshop-api:bookshop/api.py::rate_limit"
+      ],
+      "retrieval": {
+        "vector": {
+          "retrieved": [
+            "bookshop-api:bookshop/api.py::rate_limit",
+            "bookshop-api:bookshop/rate_limit.py::RateLimiter",
+            "bookshop-api:bookshop/rate_limit.py::<module>",
+            "bookshop-api:bookshop/rate_limit.py::TokenBucket",
+            "bookshop-api:bookshop/api.py::<module>"
+          ],
+          "precision": 0.6,
+          "recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "ndcg": 0.9675,
+          "hit": 1.0
+        },
+        "bm25": {
+          "retrieved": [
+            "bookshop-api:bookshop/rate_limit.py::<module>",
+            "bookshop-api:bookshop/rate_limit.py::RateLimiter",
+            "bookshop-api:bookshop/api.py::rate_limit",
+            "bookshop-api:bookshop/api.py::<module>",
+            "bookshop-web:src/cart/useCart.ts::<module>"
+          ],
+          "precision": 0.4,
+          "recall": 0.6667,
+          "reciprocal_rank": 0.5,
+          "ndcg": 0.5307,
+          "hit": 1.0
+        },
+        "hybrid": {
+          "retrieved": [
+            "bookshop-api:bookshop/api.py::rate_limit",
+            "bookshop-api:bookshop/rate_limit.py::<module>",
+            "bookshop-api:bookshop/rate_limit.py::RateLimiter",
+            "bookshop-api:bookshop/api.py::<module>",
+            "bookshop-api:bookshop/rate_limit.py::TokenBucket"
+          ],
+          "precision": 0.6,
+          "recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "ndcg": 0.8855,
+          "hit": 1.0
+        },
+        "hybrid+rerank": {
+          "retrieved": [
+            "bookshop-api:bookshop/api.py::rate_limit",
+            "bookshop-api:bookshop/rate_limit.py::TokenBucket",
+            "bookshop-api:bookshop/rate_limit.py::<module>",
+            "bookshop-api:bookshop/rate_limit.py::RateLimiter",
+            "bookshop-api:bookshop/api.py::<module>"
+          ],
+          "precision": 0.6,
+          "recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "ndcg": 0.9675,
+          "hit": 1.0
+        }
+      },
+      "answer": {
+        "answer": "The API uses a **token-bucket rate limiting algorithm** [1][2]. When a client exceeds their rate limit, they receive a **429 (Too Many Requests) response with a JSON error message and a Retry-After header** [1].\n\nSpecifically:\n- The token bucket allows bursts of up to 20 requests and refills at 5 tokens per second [2]\n- Each client is identified by their IP address [4]\n- When a request is not allowed, the API returns:\n  ```json\n  {\"error\": \"Too many requests\"}\n  ```\n  with status code 429 and a `Retry-After` header indicating how many seconds to wait [1]",
+        "grounded": true,
+        "sources_used": [
+          1,
+          2,
+          4
+        ],
+        "judgement": {
+          "faithfulness": 5,
+          "relevance": 5,
+          "correctness": 5,
+          "passed": true,
+          "rationale": "The answer accurately describes the token-bucket algorithm with capacity 20 and refill rate 5/sec, per-IP buckets, and the 429 response with error message and Retry-After header, matching the reference closely and supported by the excerpts.'"
+        }
+      }
+    },
+    {
+      "id": "q09",
+      "question": "When can an order be cancelled, and what does cancelling do?",
+      "expected_answer": "Any order that has not shipped: cancel_order raises OrderError for shipped orders and does nothing for cancelled ones. Otherwise it refunds the charge, if there is one, releases the reserved stock and marks the order cancelled.",
+      "relevant": [
+        "bookshop-api:bookshop/orders.py::cancel_order"
+      ],
+      "retrieval": {
+        "vector": {
+          "retrieved": [
+            "bookshop-api:bookshop/orders.py::cancel_order",
+            "bookshop-api:bookshop/orders.py::OrderStatus",
+            "bookshop-api:bookshop/orders.py::<module>",
+            "bookshop-api:bookshop/orders.py::place_order",
+            "bookshop-api:bookshop/payments.py::charge_order"
+          ],
+          "precision": 0.2,
+          "recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "ndcg": 1.0,
+          "hit": 1.0
+        },
+        "bm25": {
+          "retrieved": [
+            "bookshop-api:bookshop/orders.py::cancel_order",
+            "bookshop-api:bookshop/orders.py::OrderStatus",
+            "bookshop-api:bookshop/orders.py::<module>",
+            "bookshop-api:bookshop/inventory.py::Inventory",
+            "bookshop-api:bookshop/orders.py::place_order"
+          ],
+          "precision": 0.2,
+          "recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "ndcg": 1.0,
+          "hit": 1.0
+        },
+        "hybrid": {
+          "retrieved": [
+            "bookshop-api:bookshop/orders.py::cancel_order",
+            "bookshop-api:bookshop/orders.py::OrderStatus",
+            "bookshop-api:bookshop/orders.py::<module>",
+            "bookshop-api:bookshop/orders.py::place_order",
+            "bookshop-api:bookshop/inventory.py::Inventory"
+          ],
+          "precision": 0.2,
+          "recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "ndcg": 1.0,
+          "hit": 1.0
+        },
+        "hybrid+rerank": {
+          "retrieved": [
+            "bookshop-api:bookshop/orders.py::cancel_order",
+            "bookshop-api:bookshop/orders.py::OrderStatus",
+            "bookshop-api:bookshop/inventory.py::Inventory",
+            "bookshop-api:bookshop/orders.py::place_order",
+            "bookshop-api:bookshop/orders.py::Order"
+          ],
+          "precision": 0.2,
+          "recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "ndcg": 1.0,
+          "hit": 1.0
+        }
+      },
+      "answer": {
+        "answer": "An order can be cancelled when it has not been shipped [1]. Specifically, if the order status is `SHIPPED`, a cancellation raises an `OrderError` [1]. If the order is already `CANCELLED`, the cancellation is idempotent and returns without doing anything [1].\n\nWhen an order is cancelled, the function performs three operations [1]:\n1. If a charge was made (when `charge_id` is not `None`), it refunds that charge via the payment gateway\n2. It releases the reserved inventory back to stock via `inventory.release(order.id)` [1]\n3. It sets the order status to `CANCELLED` [1]\n\nIn the context of the order lifecycle, once an order is `PAID` and transitions to `SHIPPED`, it can no longer be cancelled—instead, a return must be requested [1].",
+        "grounded": true,
+        "sources_used": [
+          1
+        ],
+        "judgement": {
+          "faithfulness": 5,
+          "relevance": 5,
+          "correctness": 5,
+          "passed": true,
+          "rationale": "The answer accurately captures all conditions (shipped raises error, cancelled is idempotent) and the three effects (refund if charged, release stock, mark cancelled), matching the reference answer with correct supporting excerpts."
+        }
+      }
+    },
+    {
+      "id": "q10",
+      "question": "What happens to the reserved stock when the payment fails?",
+      "expected_answer": "place_order catches the error, calls inventory.release(order.id), which gives the reserved copies back to the stock, and re-raises the error, so the copies can be sold again.",
+      "relevant": [
+        "bookshop-api:bookshop/orders.py::place_order",
+        "bookshop-api:bookshop/inventory.py::Inventory.release"
+      ],
+      "retrieval": {
+        "vector": {
+          "retrieved": [
+            "bookshop-api:bookshop/inventory.py::Inventory",
+            "bookshop-api:bookshop/orders.py::place_order",
+            "bookshop-api:README.md::Payments",
+            "bookshop-api:bookshop/payments.py::charge_order",
+            "bookshop-api:bookshop/orders.py::cancel_order"
+          ],
+          "precision": 0.4,
+          "recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "ndcg": 1.0,
+          "hit": 1.0
+        },
+        "bm25": {
+          "retrieved": [
+            "bookshop-api:bookshop/inventory.py::Inventory",
+            "bookshop-api:bookshop/orders.py::place_order",
+            "bookshop-api:bookshop/inventory.py::<module>",
+            "bookshop-api:README.md::Payments",
+            "bookshop-api:tests/test_cart.py::test_quantity_is_limited_by_stock"
+          ],
+          "precision": 0.4,
+          "recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "ndcg": 1.0,
+          "hit": 1.0
+        },
+        "hybrid": {
+          "retrieved": [
+            "bookshop-api:bookshop/inventory.py::Inventory",
+            "bookshop-api:bookshop/orders.py::place_order",
+            "bookshop-api:README.md::Payments",
+            "bookshop-api:bookshop/payments.py::PaymentDeclined",
+            "bookshop-api:bookshop/inventory.py::<module>"
+          ],
+          "precision": 0.4,
+          "recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "ndcg": 1.0,
+          "hit": 1.0
+        },
+        "hybrid+rerank": {
+          "retrieved": [
+            "bookshop-api:bookshop/inventory.py::Inventory",
+            "bookshop-api:bookshop/orders.py::place_order",
+            "bookshop-api:bookshop/orders.py::cancel_order",
+            "bookshop-api:bookshop/payments.py::charge_order",
+            "bookshop-api:README.md::Payments"
+          ],
+          "precision": 0.4,
+          "recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "ndcg": 1.0,
+          "hit": 1.0
+        }
+      },
+      "answer": {
+        "answer": "When the payment fails, the reserved stock is released back to inventory [1][2]. In the `place_order` function, if an exception occurs during the payment charge attempt, the code catches it and calls `inventory.release(order.id)` before re-raising the exception [2]. This restores the reserved copies to the available stock so they can be sold again [1].",
+        "grounded": true,
+        "sources_used": [
+          1,
+          2
+        ],
+        "judgement": {
+          "faithfulness": 5,
+          "relevance": 5,
+          "correctness": 5,
+          "passed": true,
+          "rationale": "The answer accurately describes the release mechanism and ties it directly to place_order catching the exception, matching the reference answer's content and fully supported by the excerpts."
+        }
+      }
+    },
+    {
+      "id": "q11",
+      "question": "How does the inventory keep two orders from selling the same copy?",
+      "expected_answer": "Inventory.reserve runs under a lock, checks every item before changing anything and reserves all items or none, raising OutOfStock when a book lacks copies; reserved copies leave the available stock.",
+      "relevant": [
+        "bookshop-api:bookshop/inventory.py::Inventory.reserve"
+      ],
+      "retrieval": {
+        "vector": {
+          "retrieved": [
+            "bookshop-api:bookshop/inventory.py::<module>",
+            "bookshop-api:bookshop/inventory.py::Inventory",
+            "bookshop-api:bookshop/inventory.py::OutOfStock",
+            "bookshop-api:bookshop/cart.py::Cart.add_item",
+            "bookshop-api:bookshop/orders.py::place_order"
+          ],
+          "precision": 0.2,
+          "recall": 1.0,
+          "reciprocal_rank": 0.5,
+          "ndcg": 0.6309,
+          "hit": 1.0
+        },
+        "bm25": {
+          "retrieved": [
+            "bookshop-api:bookshop/inventory.py::<module>",
+            "bookshop-api:bookshop/inventory.py::OutOfStock",
+            "bookshop-api:bookshop/orders.py::place_order",
+            "bookshop-api:bookshop/inventory.py::Inventory",
+            "bookshop-api:bookshop/orders.py::cancel_order"
+          ],
+          "precision": 0.2,
+          "recall": 1.0,
+          "reciprocal_rank": 0.25,
+          "ndcg": 0.4307,
+          "hit": 1.0
+        },
+        "hybrid": {
+          "retrieved": [
+            "bookshop-api:bookshop/inventory.py::<module>",
+            "bookshop-api:bookshop/inventory.py::OutOfStock",
+            "bookshop-api:bookshop/inventory.py::Inventory",
+            "bookshop-api:bookshop/orders.py::place_order",
+            "bookshop-api:bookshop/orders.py::cancel_order"
+          ],
+          "precision": 0.2,
+          "recall": 1.0,
+          "reciprocal_rank": 0.3333,
+          "ndcg": 0.5,
+          "hit": 1.0
+        },
+        "hybrid+rerank": {
+          "retrieved": [
+            "bookshop-api:bookshop/inventory.py::Inventory",
+            "bookshop-api:bookshop/inventory.py::<module>",
+            "bookshop-api:bookshop/orders.py::place_order",
+            "bookshop-api:bookshop/inventory.py::OutOfStock",
+            "bookshop-api:bookshop/orders.py::cancel_order"
+          ],
+          "precision": 0.2,
+          "recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "ndcg": 1.0,
+          "hit": 1.0
+        }
+      },
+      "answer": {
+        "answer": "The inventory keeps two orders from selling the same copy by using the `reserve` method, which atomically checks available stock and then deducts it from `_stock` [1]. The method is protected by a threading lock (`self._lock`), ensuring that the check-and-deduct operation cannot be interrupted by concurrent orders [1].\n\nWhen an order is placed, `reserve` is called with the order's items [3]. The method first verifies that every book has sufficient copies available:\n\n```python\nfor book_id, quantity in items.items():\n    if self._stock.get(book_id, 0) < quantity:\n        raise OutOfStock(book_id)\n```\n\nOnly if all items pass this check does it deduct them from stock:\n\n```python\nfor book_id, quantity in items.items():\n    self._stock[book_id] -= quantity\nself._reserved[order_id] = dict(items)\n```\n\nBecause this entire sequence is wrapped in `with self._lock`, two concurrent orders cannot both see the same available stock and both proceed with their reservations [1].",
+        "grounded": true,
+        "sources_used": [
+          1,
+          3
+        ],
+        "judgement": {
+          "faithfulness": 5,
+          "relevance": 5,
+          "correctness": 5,
+          "passed": true,
+          "rationale": "The answer correctly and faithfully describes the locking, check-then-deduct, all-or-nothing reservation mechanism, matching the reference's key points with supporting code quotes from the excerpts."
+        }
+      }
+    },
+    {
+      "id": "q12",
+      "question": "How many e-mails can a customer receive per hour?",
+      "expected_answer": "At most 5 (MAX_EMAILS_PER_HOUR). Notifier.send forgets sends older than an hour and returns False, without sending, once the recipient reached the limit.",
+      "relevant": [
+        "bookshop-api:bookshop/notifications.py::Notifier.send"
+      ],
+      "retrieval": {
+        "vector": {
+          "retrieved": [
+            "bookshop-api:bookshop/notifications.py::<module>",
+            "bookshop-api:bookshop/notifications.py::Notifier",
+            "bookshop-api:bookshop/rate_limit.py::<module>",
+            "bookshop-api:bookshop/rate_limit.py::RateLimiter",
+            "bookshop-api:bookshop/rate_limit.py::TokenBucket"
+          ],
+          "precision": 0.2,
+          "recall": 1.0,
+          "reciprocal_rank": 0.5,
+          "ndcg": 0.6309,
+          "hit": 1.0
+        },
+        "bm25": {
+          "retrieved": [
+            "bookshop-api:bookshop/notifications.py::<module>",
+            "bookshop-api:bookshop/notifications.py::Notifier",
+            "bookshop-api:bookshop/catalog.py::paginate",
+            "bookshop-api:README.md::Bookshop API",
+            "bookshop-api:bookshop/cart.py::Cart.add_item"
+          ],
+          "precision": 0.2,
+          "recall": 1.0,
+          "reciprocal_rank": 0.5,
+          "ndcg": 0.6309,
+          "hit": 1.0
+        },
+        "hybrid": {
+          "retrieved": [
+            "bookshop-api:bookshop/notifications.py::<module>",
+            "bookshop-api:bookshop/notifications.py::Notifier",
+            "bookshop-api:bookshop/rate_limit.py::<module>",
+            "bookshop-api:bookshop/api.py::rate_limit",
+            "bookshop-api:bookshop/catalog.py::paginate"
+          ],
+          "precision": 0.2,
+          "recall": 1.0,
+          "reciprocal_rank": 0.5,
+          "ndcg": 0.6309,
+          "hit": 1.0
+        },
+        "hybrid+rerank": {
+          "retrieved": [
+            "bookshop-api:bookshop/notifications.py::<module>",
+            "bookshop-api:bookshop/notifications.py::Notifier",
+            "bookshop-api:bookshop/orders.py::place_order",
+            "bookshop-api:bookshop/rate_limit.py::<module>",
+            "bookshop-api:bookshop/api.py::rate_limit"
+          ],
+          "precision": 0.2,
+          "recall": 1.0,
+          "reciprocal_rank": 0.5,
+          "ndcg": 0.6309,
+          "hit": 1.0
+        }
+      },
+      "answer": {
+        "answer": "A customer can receive a maximum of 5 e-mails per hour [1]. This limit is enforced in the `Notifier.send()` method, which checks if the recipient has already received `MAX_EMAILS_PER_HOUR` emails in the last hour (3600 seconds) and returns `False` if they have, preventing the email from being sent [2].",
+        "grounded": true,
+        "sources_used": [
+          1,
+          2
+        ],
+        "judgement": {
+          "faithfulness": 5,
+          "relevance": 5,
+          "correctness": 5,
+          "passed": true,
+          "rationale": "The answer correctly states the 5 emails/hour limit and accurately describes the enforcement mechanism in Notifier.send, matching the reference answer closely and supported fully by excerpts 1 and 2."
+        }
+      }
+    },
+    {
+      "id": "q13",
+      "question": "How does the web app handle an expired access token?",
+      "expected_answer": "request() in src/api/client.ts calls refreshAccessToken (POST /auth/refresh) once when the API answers 401, stores the new token and retries the request; if the refresh fails, the error is thrown as an ApiError.",
+      "relevant": [
+        "bookshop-web:src/api/client.ts::request",
+        "bookshop-web:src/api/client.ts::refreshAccessToken"
+      ],
+      "retrieval": {
+        "vector": {
+          "retrieved": [
+            "bookshop-web:src/api/client.ts::request",
+            "bookshop-api:bookshop/api.py::current_user",
+            "bookshop-web:src/api/client.ts::refreshAccessToken",
+            "bookshop-api:bookshop/auth.py::InvalidToken",
+            "bookshop-web:src/api/client.ts::setAccessToken"
+          ],
+          "precision": 0.4,
+          "recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "ndcg": 0.9197,
+          "hit": 1.0
+        },
+        "bm25": {
+          "retrieved": [
+            "bookshop-web:src/api/client.ts::setAccessToken",
+            "bookshop-web:src/api/client.ts::refreshAccessToken",
+            "bookshop-api:bookshop/auth.py::InvalidToken",
+            "bookshop-web:README.md::Bookshop Web",
+            "bookshop-web:src/api/client.ts::<module>"
+          ],
+          "precision": 0.2,
+          "recall": 0.5,
+          "reciprocal_rank": 0.5,
+          "ndcg": 0.3869,
+          "hit": 1.0
+        },
+        "hybrid": {
+          "retrieved": [
+            "bookshop-web:src/api/client.ts::refreshAccessToken",
+            "bookshop-web:src/api/client.ts::setAccessToken",
+            "bookshop-api:bookshop/auth.py::InvalidToken",
+            "bookshop-web:src/api/client.ts::request",
+            "bookshop-web:src/api/client.ts::<module>"
+          ],
+          "precision": 0.4,
+          "recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "ndcg": 0.8772,
+          "hit": 1.0
+        },
+        "hybrid+rerank": {
+          "retrieved": [
+            "bookshop-web:src/api/client.ts::refreshAccessToken",
+            "bookshop-web:src/api/client.ts::request",
+            "bookshop-web:src/api/client.ts::setAccessToken",
+            "bookshop-web:src/api/client.ts::<module>",
+            "bookshop-api:bookshop/api.py::current_user"
+          ],
+          "precision": 0.4,
+          "recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "ndcg": 1.0,
+          "hit": 1.0
+        }
+      },
+      "answer": {
+        "answer": "When the web app makes a request and receives a 401 response, it automatically attempts to refresh the access token once and retries the request [1][2]. Specifically, the `request` function checks if the response status is 401 and, if the request hasn't already been retried and `refreshAccessToken()` succeeds, it recursively calls itself with the `retried` flag set to true [2].\n\nThe `refreshAccessToken()` function sends a POST request to the `/auth/refresh` endpoint with credentials included, and if successful, updates the stored access token via `setAccessToken()` [1]. This refreshed token is then used in the retry of the original request [1][2].",
+        "grounded": true,
+        "sources_used": [
+          1,
+          2
+        ],
+        "judgement": {
+          "faithfulness": 5,
+          "relevance": 5,
+          "correctness": 4,
+          "passed": true,
+          "rationale": "The answer accurately describes the 401 retry and refresh flow supported by excerpts 1 and 2, but omits the reference's point that if refresh fails, the original error is thrown as an ApiError.3.3.3.3.3.3.3.3.3.3.3.3.3.3.3.3.3.3.3.3"
+        }
+      }
+    },
+    {
+      "id": "q14",
+      "question": "What does the cart UI do when adding a book fails?",
+      "expected_answer": "useCart adds the book optimistically, before the API answers; if the POST /cart/items request fails, it restores the previous lines and sets an error message.",
+      "relevant": [
+        "bookshop-web:src/cart/useCart.ts::useCart"
+      ],
+      "retrieval": {
+        "vector": {
+          "retrieved": [
+            "bookshop-api:bookshop/cart.py::Cart.add_item",
+            "bookshop-api:bookshop/cart.py::CartError",
+            "bookshop-api:bookshop/cart.py::Cart.remove_item",
+            "bookshop-api:bookshop/orders.py::place_order",
+            "bookshop-web:src/cart/useCart.ts::useCart"
+          ],
+          "precision": 0.2,
+          "recall": 1.0,
+          "reciprocal_rank": 0.2,
+          "ndcg": 0.3869,
+          "hit": 1.0
+        },
+        "bm25": {
+          "retrieved": [
+            "bookshop-api:bookshop/cart.py::Cart.add_item",
+            "bookshop-api:tests/test_cart.py::test_free_shipping_from_the_threshold",
+            "bookshop-api:tests/test_cart.py::test_quantity_is_limited_by_stock",
+            "bookshop-web:src/cart/useCart.ts::useCart",
+            "bookshop-web:src/components/BookList.tsx::BookList"
+          ],
+          "precision": 0.2,
+          "recall": 1.0,
+          "reciprocal_rank": 0.25,
+          "ndcg": 0.4307,
+          "hit": 1.0
+        },
+        "hybrid": {
+          "retrieved": [
+            "bookshop-api:bookshop/cart.py::Cart.add_item",
+            "bookshop-web:src/cart/useCart.ts::useCart",
+            "bookshop-api:bookshop/orders.py::place_order",
+            "bookshop-api:bookshop/cart.py::Cart.remove_item",
+            "bookshop-api:bookshop/cart.py::Cart.subtotal"
+          ],
+          "precision": 0.2,
+          "recall": 1.0,
+          "reciprocal_rank": 0.5,
+          "ndcg": 0.6309,
+          "hit": 1.0
+        },
+        "hybrid+rerank": {
+          "retrieved": [
+            "bookshop-web:src/cart/useCart.ts::useCart",
+            "bookshop-api:bookshop/cart.py::Cart.add_item",
+            "bookshop-api:bookshop/cart.py::CartError",
+            "bookshop-api:bookshop/orders.py::place_order",
+            "bookshop-api:bookshop/cart.py::Cart.remove_item"
+          ],
+          "precision": 0.2,
+          "recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "ndcg": 1.0,
+          "hit": 1.0
+        }
+      },
+      "answer": {
+        "answer": "When adding a book fails, the cart UI rolls back the optimistic update and displays an error message [1]. Specifically, it restores the previous cart state by calling `setLines(previous)` and sets an error message with either the caught exception's message or a generic fallback: 'Could not add the book' [1].\n\n```typescript\ncatch (caught) {\n  setLines(previous);\n  setError(caught instanceof Error ? caught.message : \"Could not add the book\");\n}\n```\n\nThis implements an optimistic update pattern where the book appears in the cart immediately, but is removed from the cart if the API request fails [1].",
+        "grounded": true,
+        "sources_used": [
+          1
+        ],
+        "judgement": {
+          "faithfulness": 5,
+          "relevance": 5,
+          "correctness": 5,
+          "passed": true,
+          "rationale": "The answer accurately describes the rollback behavior and error message setting, matching the reference and fully supported by excerpt 1.in"
+        }
+      }
+    },
+    {
+      "id": "q15",
+      "question": "How is the book search input debounced?",
+      "expected_answer": "BookList passes the query through useDebounce(query, 300), so the API is called 300 ms after the user stops typing; the effect ignores responses that arrive after a newer query.",
+      "relevant": [
+        "bookshop-web:src/components/BookList.tsx::BookList",
+        "bookshop-web:src/hooks/useDebounce.ts::useDebounce"
+      ],
+      "retrieval": {
+        "vector": {
+          "retrieved": [
+            "bookshop-web:src/components/BookList.tsx::BookList",
+            "bookshop-api:bookshop/catalog.py::search_books",
+            "bookshop-api:bookshop/api.py::list_books",
+            "bookshop-api:README.md::Bookshop API",
+            "bookshop-api:bookshop/catalog.py::<module>"
+          ],
+          "precision": 0.2,
+          "recall": 0.5,
+          "reciprocal_rank": 1.0,
+          "ndcg": 0.6131,
+          "hit": 1.0
+        },
+        "bm25": {
+          "retrieved": [
+            "bookshop-web:src/components/BookList.tsx::BookList",
+            "bookshop-web:src/components/BookList.tsx::<module>",
+            "bookshop-api:bookshop/catalog.py::search_books",
+            "bookshop-web:src/hooks/useDebounce.ts::useDebounce",
+            "bookshop-api:bookshop/catalog.py::<module>"
+          ],
+          "precision": 0.4,
+          "recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "ndcg": 0.8772,
+          "hit": 1.0
+        },
+        "hybrid": {
+          "retrieved": [
+            "bookshop-web:src/components/BookList.tsx::BookList",
+            "bookshop-api:bookshop/catalog.py::search_books",
+            "bookshop-api:bookshop/api.py::list_books",
+            "bookshop-api:bookshop/catalog.py::<module>",
+            "bookshop-api:README.md::Bookshop API"
+          ],
+          "precision": 0.2,
+          "recall": 0.5,
+          "reciprocal_rank": 1.0,
+          "ndcg": 0.6131,
+          "hit": 1.0
+        },
+        "hybrid+rerank": {
+          "retrieved": [
+            "bookshop-web:src/components/BookList.tsx::BookList",
+            "bookshop-web:src/hooks/useDebounce.ts::useDebounce",
+            "bookshop-web:src/components/BookList.tsx::<module>",
+            "bookshop-api:bookshop/catalog.py::search_books",
+            "bookshop-api:bookshop/api.py::list_books"
+          ],
+          "precision": 0.4,
+          "recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "ndcg": 1.0,
+          "hit": 1.0
+        }
+      },
+      "answer": {
+        "answer": "The book search input is debounced using the `useDebounce` hook [1][2]. When the user types into the search input, the `query` state is updated immediately [1], but this is passed to `useDebounce(query, 300)` which returns a `debouncedQuery` that only updates after the user stops typing for 300 milliseconds [2]. The API request to `/books` is then triggered only when the `debouncedQuery` changes, not on every keystroke [1].\n\nThe debounce implementation uses a timer: when the value changes, it sets a timeout for the specified delay, and if the value changes again before the timeout completes, the previous timeout is cleared and a new one is started [2]. This ensures the API is called at most once every 300 ms, even if the user is typing continuously.",
+        "grounded": true,
+        "sources_used": [
+          1,
+          2
+        ],
+        "judgement": {
+          "faithfulness": 5,
+          "relevance": 5,
+          "correctness": 5,
+          "passed": true,
+          "rationale": "The answer accurately explains the useDebounce hook and 300ms delay mechanism, matching the reference's core explanation; it omits the stale-response guard (active flag) but that is a minor detail not central to the question.ally the answer is fully supported by the excerpts.'"
+        }
+      }
+    },
+    {
+      "id": "q16",
+      "question": "How are prices displayed in the web app?",
+      "expected_answer": "formatPrice uses Intl.NumberFormat with the en-US locale and USD currency (for example $1,234.50), parsing the string prices that the API sends.",
+      "relevant": [
+        "bookshop-web:src/utils/format.ts::formatPrice"
+      ],
+      "retrieval": {
+        "vector": {
+          "retrieved": [
+            "bookshop-web:src/utils/format.ts::<module>",
+            "bookshop-web:src/utils/format.ts::formatPrice",
+            "bookshop-api:bookshop/cart.py::Cart.subtotal",
+            "bookshop-api:bookshop/cart.py::Cart.total",
+            "bookshop-api:bookshop/cart.py::Cart.shipping"
+          ],
+          "precision": 0.2,
+          "recall": 1.0,
+          "reciprocal_rank": 0.5,
+          "ndcg": 0.6309,
+          "hit": 1.0
+        },
+        "bm25": {
+          "retrieved": [
+            "bookshop-web:README.md::Bookshop Web",
+            "bookshop-api:bookshop/api.py::list_books",
+            "bookshop-web:package.json::lines 1-17",
+            "bookshop-api:README.md::Running",
+            "bookshop-web:src/utils/format.ts::formatPrice"
+          ],
+          "precision": 0.2,
+          "recall": 1.0,
+          "reciprocal_rank": 0.2,
+          "ndcg": 0.3869,
+          "hit": 1.0
+        },
+        "hybrid": {
+          "retrieved": [
+            "bookshop-web:src/utils/format.ts::formatPrice",
+            "bookshop-web:README.md::Bookshop Web",
+            "bookshop-web:src/utils/format.ts::<module>",
+            "bookshop-api:bookshop/cart.py::Cart.subtotal",
+            "bookshop-api:bookshop/api.py::list_books"
+          ],
+          "precision": 0.2,
+          "recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "ndcg": 1.0,
+          "hit": 1.0
+        },
+        "hybrid+rerank": {
+          "retrieved": [
+            "bookshop-web:src/utils/format.ts::formatPrice",
+            "bookshop-web:src/utils/format.ts::<module>",
+            "bookshop-web:src/components/BookList.tsx::<module>",
+            "bookshop-web:src/components/BookList.tsx::Book",
+            "bookshop-web:README.md::Bookshop Web"
+          ],
+          "precision": 0.2,
+          "recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "ndcg": 1.0,
+          "hit": 1.0
+        }
+      },
+      "answer": {
+        "answer": "Prices are displayed using the `formatPrice` function [1], which formats prices as USD currency strings in the \"en-US\" locale [2]. The function converts string or numeric price values to formatted currency output like \"$1,234.50\" [1]. The formatter uses JavaScript's `Intl.NumberFormat` API configured with `style: \"currency\"` and `currency: \"USD\"` [2].",
+        "grounded": true,
+        "sources_used": [
+          1,
+          2
+        ],
+        "judgement": {
+          "faithfulness": 5,
+          "relevance": 5,
+          "correctness": 5,
+          "passed": true,
+          "rationale": "The answer accurately describes formatPrice using Intl.NumberFormat with en-US/USD, matching the reference and fully supported by the excerpts.'"
+        }
+      }
+    },
+    {
+      "id": "q17",
+      "question": "How many books can a page of search results show?",
+      "expected_answer": "20 by default (per_page), and at most 50: paginate caps per_page at MAX_PAGE_SIZE = 50 and at least 1.",
+      "relevant": [
+        "bookshop-api:bookshop/catalog.py::paginate",
+        "bookshop-api:bookshop/api.py::list_books"
+      ],
+      "retrieval": {
+        "vector": {
+          "retrieved": [
+            "bookshop-api:bookshop/api.py::list_books",
+            "bookshop-api:bookshop/catalog.py::<module>",
+            "bookshop-api:bookshop/catalog.py::search_books",
+            "bookshop-api:bookshop/catalog.py::paginate",
+            "bookshop-api:bookshop/api.py::<module>"
+          ],
+          "precision": 0.4,
+          "recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "ndcg": 0.8772,
+          "hit": 1.0
+        },
+        "bm25": {
+          "retrieved": [
+            "bookshop-api:bookshop/api.py::list_books",
+            "bookshop-api:bookshop/catalog.py::<module>",
+            "bookshop-web:src/components/BookList.tsx::BookList",
+            "bookshop-api:bookshop/catalog.py::paginate",
+            "bookshop-api:bookshop/catalog.py::search_books"
+          ],
+          "precision": 0.4,
+          "recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "ndcg": 0.8772,
+          "hit": 1.0
+        },
+        "hybrid": {
+          "retrieved": [
+            "bookshop-api:bookshop/api.py::list_books",
+            "bookshop-api:bookshop/catalog.py::<module>",
+            "bookshop-api:bookshop/catalog.py::search_books",
+            "bookshop-api:bookshop/catalog.py::paginate",
+            "bookshop-web:src/components/BookList.tsx::BookList"
+          ],
+          "precision": 0.4,
+          "recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "ndcg": 0.8772,
+          "hit": 1.0
+        },
+        "hybrid+rerank": {
+          "retrieved": [
+            "bookshop-api:bookshop/catalog.py::paginate",
+            "bookshop-api:bookshop/api.py::list_books",
+            "bookshop-api:bookshop/catalog.py::<module>",
+            "bookshop-api:bookshop/catalog.py::search_books",
+            "bookshop-web:src/components/BookList.tsx::BookList"
+          ],
+          "precision": 0.4,
+          "recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "ndcg": 1.0,
+          "hit": 1.0
+        }
+      },
+      "answer": {
+        "answer": "A page of search results can show a maximum of 50 books. [1] The `paginate` function caps `per_page` at `MAX_PAGE_SIZE`, [3] which is defined as 50. By default, if no `per_page` parameter is specified, the API returns 20 books per page, [2] but the maximum is limited to 50 books per page.",
+        "grounded": true,
+        "sources_used": [
+          1,
+          2,
+          3
+        ],
+        "judgement": {
+          "faithfulness": 5,
+          "relevance": 5,
+          "correctness": 5,
+          "passed": true,
+          "rationale": "The answer correctly states the default of 20 and max of 50, matching the reference, with all claims supported by the excerpts.'"
+        }
+      }
+    },
+    {
+      "id": "q18",
+      "question": "Which environment variables configure the API?",
+      "expected_answer": "DATABASE_URL (default sqlite:///bookshop.db), JWT_SECRET (required), TOKEN_TTL_MINUTES (30), FREE_SHIPPING_THRESHOLD (50.00) and SMTP_HOST (localhost), read by Settings.from_env.",
+      "relevant": [
+        "bookshop-api:bookshop/config.py::Settings",
+        "bookshop-api:README.md::Configuration"
+      ],
+      "retrieval": {
+        "vector": {
+          "retrieved": [
+            "bookshop-web:README.md::Running",
+            "bookshop-web:src/api/client.ts::<module>",
+            "bookshop-api:README.md::Bookshop API",
+            "bookshop-web:src/api/client.ts::setAccessToken",
+            "bookshop-api:bookshop/config.py::Settings"
+          ],
+          "precision": 0.2,
+          "recall": 0.5,
+          "reciprocal_rank": 0.2,
+          "ndcg": 0.2372,
+          "hit": 1.0
+        },
+        "bm25": {
+          "retrieved": [
+            "bookshop-api:bookshop/config.py::<module>",
+            "bookshop-api:README.md::Configuration",
+            "bookshop-api:bookshop/config.py::Settings",
+            "bookshop-api:README.md::Bookshop API",
+            "bookshop-web:src/api/client.ts::ApiError"
+          ],
+          "precision": 0.4,
+          "recall": 1.0,
+          "reciprocal_rank": 0.5,
+          "ndcg": 0.6934,
+          "hit": 1.0
+        },
+        "hybrid": {
+          "retrieved": [
+            "bookshop-api:README.md::Bookshop API",
+            "bookshop-web:src/api/client.ts::<module>",
+            "bookshop-api:bookshop/config.py::Settings",
+            "bookshop-web:README.md::Running",
+            "bookshop-api:README.md::Configuration"
+          ],
+          "precision": 0.4,
+          "recall": 1.0,
+          "reciprocal_rank": 0.3333,
+          "ndcg": 0.5438,
+          "hit": 1.0
+        },
+        "hybrid+rerank": {
+          "retrieved": [
+            "bookshop-api:bookshop/config.py::Settings",
+            "bookshop-api:README.md::Configuration",
+            "bookshop-web:README.md::Running",
+            "bookshop-web:src/api/client.ts::<module>",
+            "bookshop-api:bookshop/config.py::<module>"
+          ],
+          "precision": 0.4,
+          "recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "ndcg": 1.0,
+          "hit": 1.0
+        }
+      },
+      "answer": {
+        "answer": "The API is configured with the following environment variables [1][2]:\n\n- `DATABASE_URL` - Database connection string (default: `sqlite:///bookshop.db`)\n- `JWT_SECRET` - Secret that signs the access tokens (required, no default)\n- `TOKEN_TTL_MINUTES` - How long an access token is valid in minutes (default: `30`)\n- `FREE_SHIPPING_THRESHOLD` - Order subtotal from which shipping is free (default: `50.00`)\n- `SMTP_HOST` - Mail server for notifications (default: `localhost`)\n\nThe `JWT_SECRET` is the only required variable; if it is not set, the application raises a `RuntimeError` [1].",
+        "grounded": true,
+        "sources_used": [
+          1,
+          2
+        ],
+        "judgement": {
+          "faithfulness": 5,
+          "relevance": 5,
+          "correctness": 5,
+          "passed": true,
+          "rationale": "The answer accurately lists all five environment variables with their defaults and correctly notes JWT_SECRET is required, matching the reference and fully supported by the excerpts; it also correctly omits SHIPPING_FEE since it lacks an env var mapping.rr"
+        }
+      }
+    }
+  ],
+  "usage": {
+    "model_calls": 72,
+    "input_tokens": 158830,
+    "output_tokens": 10892,
+    "cost_usd": 0.313885,
+    "models": [
+      "claude-haiku-4-5-20251001",
+      "claude-sonnet-5"
+    ]
+  },
+  "generator_model": "claude-haiku-4-5",
+  "judge_model": "claude-sonnet-5",
+  "duration_ms": 46611,
+  "created_at": 1792292719.7298818
+}

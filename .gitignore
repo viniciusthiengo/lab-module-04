@@ -1,0 +1,12 @@
+.DS_Store
+.env
+.env.local
+
+# Python
+.venv/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+
+# The local index (DATA_DIR)
+backend/data/
